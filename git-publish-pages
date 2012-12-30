@@ -1,0 +1,89 @@
+#/bin/sh
+
+# first check errors, for example 'not a repository' error
+git status 1>/dev/null
+if [ $? -ne 0 ]; then
+    exit $?
+fi
+
+TOP_LEVEL="$(pwd)"
+CURRENT_BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+URL="$(git config --get remote.origin.url)"
+LAST_REVISION="$(git rev-parse --short HEAD)"
+COMMIT_MESSAGE="Built from $CURRENT_BRANCH:$LAST_REVISION"
+
+SITE_DIRECTORY='_site'
+GITHUB_PAGES_BRANCH='gh-pages'
+TEMP_DIRECTORY="$(mktemp --directory -p $TOP_LEVEL)"
+
+USAGE='usage: git publish-pages [<options>]
+
+    -s, --site-dir <dir>  directory of static content, default _site
+    -b, --gh-branch <b>   github pages branch, default is gh-pages
+    -m, --message <msg>   commit message, default is:
+                          Built from $branch:$revision
+                          
+See http://github.com/prost87/git-publish-pages for more info.'
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+        -s|--site-directory)
+            shift
+            SITE_DIRECTORY="$1"
+            ;;
+        -b|--gh-branch)
+            shift
+            GITHUB_PAGES_BRANCH="$1"
+            ;;
+        -m|--message)
+            shift
+            COMMIT_MESSAGE="$1"
+            ;;
+        -h|--help)
+            echo "$USAGE"
+            exit 0
+            ;;
+        *)
+            echo "error: unknown option \`$1'"
+            exit 1
+            ;;
+    esac
+    shift
+done     
+
+# get to the root of project
+cd "$TOP_LEVEL"
+
+if [ -d "$SITE_DIRECTORY/.git" ]; then
+    echo "Directory $SITE_DIRECTORY appears to be a git repository"
+else
+    # just get one branch only
+    # git clone --single-branch was introduced on April 2012
+    \rm -Rf "$SITE_DIRECTORY"
+    git init $SITE_DIRECTORY || exit $?
+    cd "$SITE_DIRECTORY"
+    git remote add -t "$GITHUB_PAGES_BRANCH" -f origin "$URL" || exit $?
+    git checkout "$GITHUB_PAGES_BRANCH" || exit $?
+    git clone "$URL" -b "$GITHUB_PAGES_BRANCH" "$SITE_DIRECTORY" || exit $?
+fi
+
+cd $SITE_DIRECTORY
+git rm -rf * || exit $?
+
+cd $TOP_LEVEL
+echo "Generating static site with jekyll"
+jekyll --no-server "$TEMP_DIRECTORY"
+if [ $? -ne 0 ]; then
+    \rm -Rf $TEMP_DIRECTORY
+    exit $?
+fi
+touch "$TEMP_DIRECTORY/.nojekyll"
+cp -R $TEMP_DIRECTORY/* $SITE_DIRECTORY
+\rm -Rf $TEMP_DIRECTORY
+
+cd "$SITE_DIRECTORY"
+echo "Creating a commit for the branch '$GITHUB_PAGES_BRANCH'"
+git add -A || exit $?
+git commit -m "Built from $CURRENT_BRANCH:$LAST_REVISION" || exit $?
+
+git push origin $GITHUB_PAGES_BRANCH || exit $?
