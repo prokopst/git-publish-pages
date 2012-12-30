@@ -54,31 +54,31 @@ done
 cd "$TOP_LEVEL"
 
 if [ -d "$SITE_DIRECTORY/.git" ]; then
-    echo "Directory $SITE_DIRECTORY appears to be a git repository"
+    echo "Directory '$SITE_DIRECTORY' appears to be a git repository"
 else
     # just get one branch only
     # git clone --single-branch was introduced on April 2012
     \rm -Rf "$SITE_DIRECTORY"
-    git init $SITE_DIRECTORY || exit $?
+    git init "$SITE_DIRECTORY" || exit $?
     cd "$SITE_DIRECTORY"
     git remote add -t "$GITHUB_PAGES_BRANCH" -f origin "$URL" || exit $?
     git checkout "$GITHUB_PAGES_BRANCH" || exit $?
     git clone "$URL" -b "$GITHUB_PAGES_BRANCH" "$SITE_DIRECTORY" || exit $?
 fi
 
-cd $SITE_DIRECTORY
+cd "$SITE_DIRECTORY"
 git rm -rf * || exit $?
 
-cd $TOP_LEVEL
+cd "$TOP_LEVEL"
 echo "Generating static site with jekyll"
-TEMP_DIRECTORY="$(mktemp --directory -p $TOP_LEVEL)"
+TEMP_DIRECTORY="$(mktemp --directory -p "$TOP_LEVEL")"
 jekyll --no-server "$TEMP_DIRECTORY"
 if [ $? -ne 0 ]; then
-    \rm -Rf $TEMP_DIRECTORY
+    \rm -Rf "$TEMP_DIRECTORY"
     exit $?
 fi
-cp -R $TEMP_DIRECTORY/* $SITE_DIRECTORY
-\rm -Rf $TEMP_DIRECTORY
+cp -R "$TEMP_DIRECTORY"/* "$SITE_DIRECTORY"
+\rm -Rf "$TEMP_DIRECTORY"
 touch "$SITE_DIRECTORY/.nojekyll"
 
 cd "$SITE_DIRECTORY"
@@ -86,4 +86,4 @@ echo "Creating a commit for the branch '$GITHUB_PAGES_BRANCH'"
 git add -A || exit $?
 git commit -m "Built from $CURRENT_BRANCH:$LAST_REVISION" || exit $?
 
-git push origin $GITHUB_PAGES_BRANCH || exit $?
+git push origin "$GITHUB_PAGES_BRANCH" || exit $?
