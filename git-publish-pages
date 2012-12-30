@@ -14,7 +14,6 @@ COMMIT_MESSAGE="Built from $CURRENT_BRANCH:$LAST_REVISION"
 
 SITE_DIRECTORY='_site'
 GITHUB_PAGES_BRANCH='gh-pages'
-TEMP_DIRECTORY="$(mktemp --directory -p $TOP_LEVEL)"
 
 USAGE='usage: git publish-pages [<options>]
 
@@ -72,14 +71,15 @@ git rm -rf * || exit $?
 
 cd $TOP_LEVEL
 echo "Generating static site with jekyll"
+TEMP_DIRECTORY="$(mktemp --directory -p $TOP_LEVEL)"
 jekyll --no-server "$TEMP_DIRECTORY"
 if [ $? -ne 0 ]; then
     \rm -Rf $TEMP_DIRECTORY
     exit $?
 fi
-touch "$TEMP_DIRECTORY/.nojekyll"
 cp -R $TEMP_DIRECTORY/* $SITE_DIRECTORY
 \rm -Rf $TEMP_DIRECTORY
+touch "$SITE_DIRECTORY/.nojekyll"
 
 cd "$SITE_DIRECTORY"
 echo "Creating a commit for the branch '$GITHUB_PAGES_BRANCH'"
