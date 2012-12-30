@@ -28,7 +28,16 @@ This script tries to:
 Installation
 ------------
 
-    # download stuff to bin folder
-    wget https://raw.github.com/prost87/git-publish-pages/master/git-publish-pages /usr/local/bin/git-publish-pages
-    # make git alias, so you can use completition to command publish
+Download stuff to bin folder, in this case /usr/local/bin:
+
+    sudo wget https://raw.github.com/prost87/git-publish-pages/master/git-publish-pages --output-document /usr/local/bin/git-publish-pages
+    
+Change execute permission:
+    
+    sudo chmod ugo+x /usr/local/bin/git-publish-pages
+    
+Make git alias, so you can use completition: ```git pub<tab>```.
+Note that completition of options and --help command with alias are not supported.
+Instead of ```--help``` use ```-h```.
+
     git config --global alias.publish '!sh -c "/usr/local/bin/git-publish-pages $*"'
