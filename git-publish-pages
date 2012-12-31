@@ -63,7 +63,6 @@ else
     cd "$SITE_DIRECTORY"
     git remote add -t "$GITHUB_PAGES_BRANCH" -f origin "$URL" || exit $?
     git checkout "$GITHUB_PAGES_BRANCH" || exit $?
-    git clone "$URL" -b "$GITHUB_PAGES_BRANCH" "$SITE_DIRECTORY" || exit $?
 fi
 
 cd "$SITE_DIRECTORY"
