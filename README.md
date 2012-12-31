@@ -69,3 +69,26 @@ Note that completition of options and ```--help``` command with alias are not su
 Instead of ```--help``` use ```-h```.
 
     git config --global alias.publish '!sh -c "/usr/local/bin/git-publish-pages $*"'
+    
+Creation of branch gh-pages
+---------------------------
+
+First create local branch without any parent.
+
+    git checkout --orphan gh-pages
+    
+Then delete local content (it's the stuff from previous branch).
+    
+    git rm -rf .
+    
+Create an empty commit.
+    
+    git commit --allow-empty -m 'Initialized empty gh-pages branch'
+    
+Push it to remote server.
+    
+    git push origin gh-pages
+
+Now back to the branch master.
+    
+    git checkout master
