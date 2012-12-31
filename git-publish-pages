@@ -55,6 +55,7 @@ cd "$TOP_LEVEL"
 
 if [ -d "$SITE_DIRECTORY/.git" ]; then
     echo "Directory '$SITE_DIRECTORY' appears to be a git repository"
+    cd "$SITE_DIRECTORY"
 else
     # just get one branch only
     # git clone --single-branch was introduced on April 2012
@@ -65,8 +66,8 @@ else
     git checkout "$GITHUB_PAGES_BRANCH" || exit $?
 fi
 
-cd "$SITE_DIRECTORY"
-git rm -rf * || exit $?
+# remove everything there
+git rm --ignore-unmatch --force -r * || exit $?
 
 cd "$TOP_LEVEL"
 echo "Generating static site with jekyll"
