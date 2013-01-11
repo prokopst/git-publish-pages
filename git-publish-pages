@@ -13,7 +13,17 @@ LAST_REVISION="$(git rev-parse --short HEAD)"
 COMMIT_MESSAGE="Built from $CURRENT_BRANCH:$LAST_REVISION"
 
 SITE_DIRECTORY='_site'
-GITHUB_PAGES_BRANCH='gh-pages'
+
+# Values like these are expected:
+# - git@github.com:prost87/prost87.github.com.git
+# - https://github.com/prost87/prost87.github.com.git
+# - ... name/name.github.com.git
+echo $URL | grep -P -e '([^.:/]+)/\1[.]github[.]com[.]git' 2>&1 1>/dev/null
+if [ $? -eq 0 ]; then
+    GITHUB_PAGES_BRANCH='master'
+else
+    GITHUB_PAGES_BRANCH='gh-pages'
+fi
 
 USAGE='usage: git publish-pages [<options>]
 
@@ -66,8 +76,11 @@ else
     git checkout "$GITHUB_PAGES_BRANCH" || exit $?
 fi
 
-# remove everything there
-git rm --ignore-unmatch --force -r * || exit $?
+# remove everything but:
+# ./.git.*
+# ./CNAME
+# ./.nojekyll
+find . -regextype posix-egrep -not -regex '([.])|([.]/[.]git.*)|([.]/CNAME)|([.]/[.]nojekyll)' | git rm --ignore-unmatch --force -r * || exit $?
 
 cd "$TOP_LEVEL"
 echo "Generating static site with jekyll"
